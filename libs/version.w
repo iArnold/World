@@ -41,7 +41,7 @@ Mac-OS-X?: MacOSX?: make function! [[
 	system/version/platform = 'macosx
 ]]
 
-MacOSX64?: make function! [[
+MacOSX64?: Mac-OS-X64?: make function! [[
 	"True if running 64-bit under Mac OS X."
 ][
 	system/version/platform = 'macosx and (system/version/variation/1 = 1)
