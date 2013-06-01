@@ -1,8 +1,19 @@
 World [
 	Title:		"REBOL Extension"
-	Date:		12-Jan-2012
-	Version:	0.0.18
+	Date:		28-May-2013
+	Version:	0.0.26
 	History: [
+		0.0.26	[28-5-2013	JN	{Moved last to cortex.w}]
+		0.0.25	[26-5-2013	JN	{Added fourth, fifth, ...}]
+		0.0.24	[26-5-2013	JN	{Changed many function defs to use func and pick
+								 Freed tan}]
+		0.0.23	[26-5-2013	JN	{Added last}]
+		0.0.22	[24-5-2013	JN	{Moved detab to cortex.w
+								 Added use}]
+		0.0.21	[21-2-2012	JN	{Added append
+								 Added insert}]
+		0.0.20	[16-2-2012	JN	{Changed detab to use append}]
+		0.0.19	[13-2-2012	JN	{Added empty?}]
 		0.0.18	[12-1-2012	JN	{Added rebol}]
 		0.0.17	[19-12-2011	JN	{Added reform
 								 Added detab
@@ -18,7 +29,7 @@ World [
 								 Added function}]
 		0.0.13	[01-12-2011	JN	{Added to-hex}]
 		0.0.12	[27-11-2011	JN	{Added forever}]
-		0.0.11	[16-11-2011	JN	{Added many to- function}]
+		0.0.11	[16-11-2011	JN	{Added many to- functions}]
 		0.0.10	[3-11-2011	JN	{Changed native?}]
 		0.0.9	[2-11-2011	JN	{Added charset}]
 		0.0.8	[30-10-2011	JN	{Added /radians to cosine, sine and tangent}]
@@ -91,6 +102,7 @@ sienna:			160.82.45
 silver:			192.192.192
 sky:			164.200.255
 snow:			240.240.240
+free :tan
 tan:			222.184.135
 teal:			0.128.128
 violet:			72.0.90
@@ -158,7 +170,21 @@ strict-not-equal?: make function! [[
 ]]
 
 ; Context
-with: make function! [[
+use: make function! [[
+	"Defines words local to a block."
+	[retain]
+	words [block!]
+	body [block!]
+	/local b
+][
+	b: to block! words
+	forall b [
+		poke b 1 to set-word! b/1
+	]
+	append b reduce ['none 'do body]
+	make context! b
+]]
+with: make function! [[		; Not sure where this came from!?
 	"Executes a block at a context"
 	obj [context!]
 	body [block!]
@@ -201,8 +227,8 @@ as-string: make function! [[
 ][
 	as string! string
 ]]
-decimal?:	:real?
-op?:		:operator?
+decimal?:	func pick :real? 1 pick :real? 2
+op?:		func pick :operator? 1 pick :operator? 2
 native?: make function! [[
 	"True for native function and operator values."
 	value
@@ -287,8 +313,8 @@ xor~: make function! [[
 ]]
 
 ; Math
-!:			:not
-absolute:	:abs
+!:			func pick :not 1 pick :not 2
+absolute:	func pick :abs 1 pick :abs 2
 cosine:		make function! [[value /radians][
 	if and~ radians find [integer! real!] type?/word value [
 		value: value * 57.29577951308232
@@ -299,9 +325,9 @@ cosine:		make function! [[value /radians][
 	/ 2 1]]
 log-10:		make function! [[value][(ln value) / ln 10.]]
 log-2:		make function! [[value][(ln value) / ln 2.]]
-log-e:		:ln
-maximum: :max
-minimum: :min
+log-e:		func pick :ln 1 pick :ln 2
+maximum:	func pick :max 1 pick :max 2
+minimum:	func pick :min 1 pick :min 2
 sine:		make function! [[value /radians][
 	if and~ radians find [integer! real!] type?/word value [
 		value: value * 57.29577951308232
@@ -310,7 +336,7 @@ sine:		make function! [[value /radians][
 	(2.718281828459045 ** (value * 0.0174532925199433 * 1i))
 	- (2.718281828459045 ** (value * 0.0174532925199433 * -1i))
 	/ 2i 1]]
-square-root:	:sqrt
+square-root:	func pick :sqrt 1 pick :sqrt 2
 tangent:		make function! [[value][
 	if and~ radians find [integer! real!] type?/word value [
 		value: value * 57.29577951308232
@@ -348,34 +374,113 @@ load: make function! [[
 }
 
 ; Series
-new-line?:	:newline?
-new-line:	:set-newline
+fourth: make function! [[
+	"Fourth value of a series."
+	series [series! date! tuple!]
+][
+	pick series 4
+]]
+fifth: make function! [[
+	"Fifth value of a series."
+	series [series! date! tuple!]
+][
+	pick series 5
+]]
+sixth: make function! [[
+	"Sixth value of a series."
+	series [series! date! tuple!]
+][
+	pick series 5
+]]
+seventh: make function! [[
+	"Seventh value of a series."
+	series [series! date! tuple!]
+][
+	pick series 7
+]]
+eight: make function! [[
+	"Eight value of a series."
+	series [series! date! tuple!]
+][
+	pick series 8
+]]
+ninth: make function! [[
+	"Ninth value of a series."
+	series [series! date! tuple!]
+][
+	pick series 9
+]]
+tenth: make function! [[
+	"Tenth value of a series."
+	series [series! date! tuple!]
+][
+	pick series 10
+]]
+comment {
+world_append: :append
+append: make function! [[
+	"Appends a value to the tail of a series and returns the series head."
+	series [series!]
+	value
+	/only "Appends a series as a series"
+][
+	skip either only [
+		world_append/only series :value
+	][
+		world_append series :value
+	] (- -1 + index? series)
+]]
+}
+free :empty?
+empty?:	func pick :tail? 1 pick :tail? 2
+world_insert: :insert
+insert: make function! [[
+	"Inserts a value into a series and returns the series after the insert."
+	series [series!]
+	value
+	/only "Appends a series as a series"
+	/dup "Duplicates the insert a specified number of times"
+		count [integer!]
+	/local n
+][
+	either dup [
+		n: count
+		either only [
+			while [0 <= count: count - 1] [
+				world_insert/only series :value
+			]
+			skip series n
+		][
+			while [0 <= count: count - 1] [
+				world_insert series :value
+			]
+			either find series! type? :value [
+				skip series n * length? :value
+			][
+				skip series n
+			]
+		]
+	][
+		either only [
+			world_insert/only series :value
+			next series
+		][
+			world_insert series :value
+			either find series! type? :value [
+				skip series length? :value
+			][
+				next series
+			]
+		]
+	]
+]]
+new-line?:	func pick :newline? 1 pick :newline? 2
+new-line:	func pick :set-newline 1 pick :set-newline 2
 
 ; Sets
-charset:	:bitset
+charset:	func pick :bitset 1 pick :bitset 2
 
 ; Strings
-detab: make function! [[
-	"Converts tabs in a string to spaces. (tab size 4)"
-	string [any-string!]
-	/size "Specify number of spaces per tab"
-		number [integer!]
-	/local out mark
-][
-	if none! = type? size [number: 4]
-	out: clear ""
-	mark: find string "^-"
-	while [none! <> type? mark] [
-		insert skip out length? out copy/part string mark
-		insert/dup skip out length? out " " number
-		string: next mark
-		mark: find string "^-"
-	]
-	if none! <> type? string [
-		insert skip out length? out string
-	]
-	out
-]]
 entab: make function! [[
 	"Converts spaces in a string to tabs. (tab size 4)"
 	string [any-string!]
@@ -402,7 +507,8 @@ entab: make function! [[
 		string: next string
 	]
 	while [string/1 = #" "] [remove string]
-	skip string (- (index? string) - 1)
+	;skip string (- -1 + index? string)
+	head string
 ]]
 reform: make function! [[
     "Forms a reduced block."
